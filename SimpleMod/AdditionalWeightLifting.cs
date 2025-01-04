@@ -15,52 +15,29 @@ namespace ASUPatch
     public static bool isAtGlobalMap = false;   //globalmapかどうかの判定
 
     //[HarmonyPatch]
-    public class TickConditionsPatch
+    public class PatchAct
     {
+        //+++++++++++ config loading ++++++++++++++++++++++++++++++++++++++++++
+        static bool configPCGetableExp => AdditionalSU.ASUMain.IsPlayerGetableExp;
+        static bool configPetGetableExp => AdditionalSU.ASUMain.IsPetGetableExp;
+        static bool configInfluenceWeight => AdditionalSU.ASUMain.DoInfluenceWeight;
+
+        static bool configDebug => AdditionalSU.ASUMain.IsDebugMode;
+        static bool configCheat => AdditionalSU.ASUMain.IsCheatMode;
+        static bool configPCFAE => AdditionalSU.ASUMain.DoPCForceAwardExp;
+        static bool configPetFAE => AdditionalSU.ASUMain.DoPetForceAwardExp;
+
+        static float configPCExpM => AdditionalSU.ASUMain.ParamPCExpMultiplier;
+        static float configPetExpM => AdditionalSU.ASUMain.ParamPetExpMultiplier;
+        static float configPCFreqM => AdditionalSU.ASUMain.ParamPCFrequencyMultiplier;
+        static float configPetFreqM => AdditionalSU.ASUMain.ParamPetFrequencyMultiplier;
+
         
 
-        //+++++++++++ config loading ++++++++++++++++++++++++++++++++++++++++++
-        static bool configPCGetableExp => AdditionalWL.AWLMain.flagPCGetableExp.Value;
-        static bool configPetGetableExp => AdditionalWL.AWLMain.flagPetGetableExp.Value;
-        static bool configInfluenceWeight => AdditionalWL.AWLMain.flagInfluenceWeight.Value;
 
-        static bool configDebug => AdditionalWL.AWLMain.isDebugMode.Value;
-        static bool configCheat => AdditionalWL.AWLMain.isCheatMode.Value;
-        static bool configPCFAE => AdditionalWL.AWLMain.PCForceAwardExp.Value;
-        static bool configPetFAE => AdditionalWL.AWLMain.PetForceAwardExp.Value;
-
-        static float configPCExpM => AdditionalWL.AWLMain.PCExpMultiplier.Value;
-        static float configPetExpM => AdditionalWL.AWLMain.PetExpMultiplier.Value;
-        static float configPCFreqM => AdditionalWL.AWLMain.PCFrequencyMultiplier.Value;
-        static float configPetFreqM => AdditionalWL.AWLMain.PetFrequencyMultiplier.Value;
-
-        //++++++++++++  メソッド　+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        public static void logging(string t)
-        {
-            UnityEngine.Debug.Log(t);
-        }
-
-        public static bool IsGetableExp(Chara c)  //configから読み込む
-        {
-            if(c.IsPC){
-                return configPCGetableExp;
-            }else{
-                return configPetGetableExp;
-            }
-        }
-
-        /////seedをベースにr1で抽選 && r1>=seedならtrue
-        public static bool IsProbabilityTrue(int r1, int seed)
-        { 
-            int rsd = UnityEngine.Random.Range(0, seed);
-            return (r1 >= rsd) ? true : false;
-            //return UnityEngine.Random.Range(0, seed) < r1;
-        }
-
-
-        //[HarmonyPostfix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(Chara), "TickConditions")]
-        public static void Postfix(Chara __instance)
+        public static void TickCOnditions_PostPatch(Chara __instance)
         {
             // **********負荷軽減のためのゼロ次抽選*************************************
 
@@ -70,7 +47,7 @@ namespace ASUPatch
 
             //キャラ毎の独自変数置き場だよ　　
             //抽選用天井ガチャの処理
-            //Dictionary<Chara, int> tgDict = AdditionalWL.AWLMain.tengatyaDict;
+            //Dictionary<Chara, int> tgDict = AdditionalSU.ASUMain.tengatyaDict;
             
 
             //*********  cの参照 *********************************************
@@ -266,7 +243,39 @@ namespace ASUPatch
             //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
         }
-        
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Zone), "Activate")]
+        public static void Activate_PostPatch(Zone __instance){
+            Zone z = __instance;
+            //isAtGlobalMap = (z.getName(NameStyle.Simple) == )? : ;
+            logging("[ASU] At:Activate : " + z.GetName(NameStyle.Simple) + " / " + z.ParentZone.GetName(NameStyle.Simple));
+
+        }
+
+
+        //++++++++++++  メソッド　+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        public static void logging(string t)
+        {
+            UnityEngine.Debug.Log(t);
+        }
+
+        public static bool IsGetableExp(Chara c)  //configから読み込む
+        {
+            if(c.IsPC){
+                return configPCGetableExp;
+            }else{
+                return configPetGetableExp;
+            }
+        }
+
+        /////seedをベースにr1で抽選 && r1>=seedならtrue
+        public static bool IsProbabilityTrue(int r1, int seed)
+        { 
+            int rsd = UnityEngine.Random.Range(0, seed);
+            return (r1 >= rsd) ? true : false;
+            //return UnityEngine.Random.Range(0, seed) < r1;
+        }
     }
 }
 
