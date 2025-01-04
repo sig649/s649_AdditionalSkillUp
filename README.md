@@ -1,1 +1,2 @@
 # s649_AdditionalSkillUp
+AWLとしてsteamに上げてるものの開発中のバージョンを一応公開
