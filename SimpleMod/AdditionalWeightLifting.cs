@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 
 namespace ASUPatch
 {
-    public static bool isAtGlobalMap = false;   //globalmapかどうかの判定
+    //public static bool isAtGlobalMap = false;   //globalmapかどうかの判定
 
     //[HarmonyPatch]
     public class PatchAct
@@ -32,15 +32,21 @@ namespace ASUPatch
         static float configPCFreqM => AdditionalSU.ASUMain.ParamPCFrequencyMultiplier;
         static float configPetFreqM => AdditionalSU.ASUMain.ParamPetFrequencyMultiplier;
 
-        
-
+        public static bool IsOnGlobalMap(){
+            return (EClass.pc.currentZone.id == "ntyris") ? true : false;
+        }
+        public static int rng(int min, int max){
+            return UnityEngine.Random.Range(min, max);
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Chara), "TickConditions")]
-        public static void TickCOnditions_PostPatch(Chara __instance)
+        public static void TickConditions_PostPatch(Chara __instance)
         {
             // **********負荷軽減のためのゼロ次抽選*************************************
-
+            if(IsOnGlobalMap()){
+                if(rng(0,9) != 0){ return; }
+            }
             //if (UnityEngine.Random.Range(0, 99) >= 50) { return; }  //強制return 毎Tは流石に自粛 //0にすると毎T
 
             //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -92,7 +98,9 @@ namespace ASUPatch
             
 
             //----- result----------------------------------------------------
-            bool flag1stGatya;  //抽選判定
+            //bool flag1stGatya;  //抽選判定
+            int gatyaTickets = 1;  //抽選回数
+            int atari1stGatya = 0;    //抽選結果:当たり回数
             int resExp;           //取得経験値(ModExpの処理に準ずる)
 
             //+++++++++++++configの処理++++++++++++++++++++++++++++++++++++++++++++
@@ -115,19 +123,41 @@ namespace ASUPatch
 
 
             // ++++++++ 一次抽選 +++++++++++++++++++++++++++++++++
+            sd1 = (iwr > 200) ? 200 : iwr;           // seed1 0~200 の範囲のシード
 
+            // globalmapなら10連ガチャとする
+            gatyaTickets = (IsOnGlobalMap()) ? 10 : 1;
+
+            for(int = 0; i < gatyaTickets; i++){
+                
+                r1 = rng(0, sd1 * sd1);       // 0 ~ 40000 の乱数?
+
+                //チートON なら、r1に頻度倍率を掛ける・・・下限を１としておきます
+                if (configCheat) {
+                    r1 = (int)((r1 * freqMulti) < 1.0f ? 1.0f : r1 * freqMulti);
+                }
+
+                //-------- normal gatya -------------------------------
+                atari1stGatya += IsProbabilityTrue(r1, 40000); 
+            }
+            /*
+            if(!IsOnGlobalMap()){
             sd1 = (iwr > 200) ? 200 : iwr;           // seed1 0~200 の範囲のシード
             r1 = UnityEngine.Random.Range(0, sd1 * sd1);       // 0 ~ 40000 の乱数?
 
 
-            //チートON && /*FAEON*/なら、r1に頻度倍率を掛ける・・・下限を１としておきます
+            //チートON なら、r1に頻度倍率を掛ける・・・下限を１としておきます
             if (configCheat) {
                 r1 = (int)((r1 * freqMulti) < 1.0f ? 1.0f : r1 * freqMulti);
             }
 
 
             //-------- normal gatya -------------------------------
-            flag1stGatya = IsProbabilityTrue(r1, 40000);  
+            atari1stGatya = IsProbabilityTrue(r1, 40000); 
+
+
+            } 
+            */
                                                          
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -156,7 +186,7 @@ namespace ASUPatch
 
 
             if (resExp < 1) { resExp = 1; }        //最少1exp
-            if (resExp > 1000) { resExp = 1000; }  //経験値上限1000exp
+            if (resExp > 100) { resExp = 100; }  //経験値上限100exp
 
             //bool f2 = (r2 > 10000)? true : false;
             //bool f3 = (r3 == 0)? true : false;
@@ -249,7 +279,7 @@ namespace ASUPatch
         public static void Activate_PostPatch(Zone __instance){
             Zone z = __instance;
             //isAtGlobalMap = (z.getName(NameStyle.Simple) == )? : ;
-            logging("[ASU] At:Activate : " + z.GetName(NameStyle.Simple) + " / " + z.ParentZone.GetName(NameStyle.Simple));
+            logging("[ASU] At:Activate : " + z.GetName(NameStyle.Simple));
 
         }
 
@@ -269,11 +299,11 @@ namespace ASUPatch
             }
         }
 
-        /////seedをベースにr1で抽選 && r1>=seedならtrue
-        public static bool IsProbabilityTrue(int r1, int seed)
+        /////seedをベースにr1で抽選 && r1>=seedならtrue  ///return をintに変更
+        public static int IsProbabilityTrue(int r1, int seed)
         { 
             int rsd = UnityEngine.Random.Range(0, seed);
-            return (r1 >= rsd) ? true : false;
+            return (r1 >= rsd) ? 1 : 0;
             //return UnityEngine.Random.Range(0, seed) < r1;
         }
     }
