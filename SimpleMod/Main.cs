@@ -15,7 +15,7 @@ using System.Diagnostics;
 
 namespace AdditionalSU
 {
-    [BepInPlugin("s649_AWL", "Additional SkillUp", "0.1.0.0")]
+    [BepInPlugin("s649_ASU", "Additional SkillUp", "0.1.0.0")]
     public class ASUMain : BaseUnityPlugin
     {
         
@@ -34,22 +34,38 @@ namespace AdditionalSU
         private static ConfigEntry<float> CE_PetFrequencyMultiplier;
 
         // getter
-        public static bool IsPlayerGetableExp { get { return CE_IsPlayerGetableExp.Value; } };
-        public static bool IsPetGetableExp { get { return CE_IsPetGetableExp.Value; } };
-        public static bool DoInfluenceWeight { get { return CE_InfluenceWeight.Value; } };
-        public static bool IsDebugMode { get { return CE_IsDebugMode.Value; } };
-        public static bool IsCheatMode { get { return CE_IsCheatMode.Value; } };
-        public static bool DoPCForceAwardExp { get { return CE_PCForceAwardExp.Value; } };
-        public static float ParamPCExpMultiplier { get { return CE_PCExpMultiplier.Value; } };
-        public static float ParamPCFrequencyMultiplier { get { return CE_PCFrequencyMultiplier.Value; } };
-        public static bool DoPetForceAwardExp { get { return CE_PetForceAwardExp.Value; } };
-        public static float ParamPetExpMultiplier { get { return CE_PetExpMultiplier.Value; } };
-        public static float ParamPetFrequencyMultiplier { get { return CE_PetFrequencyMultiplier.Value; } };
+        public static bool IsPlayerGetableExp => CE_IsPlayerGetableExp.Value;
+        public static bool IsPetGetableExp => CE_IsPetGetableExp.Value;
+        public static bool DoInfluenceWeight => CE_InfluenceWeight.Value;
+        public static bool IsDebugMode => CE_IsDebugMode.Value;
+        public static bool IsCheatMode => CE_IsCheatMode.Value;
+        public static bool DoPCForceAwardExp => CE_PCForceAwardExp.Value;
+        public static float ParamPCExpMultiplier => CE_PCExpMultiplier.Value;
+        public static float ParamPCFrequencyMultiplier => CE_PCFrequencyMultiplier.Value;
+        public static bool DoPetForceAwardExp => CE_PetForceAwardExp.Value;
+        public static float ParamPetExpMultiplier => CE_PetExpMultiplier.Value;
+        public static float ParamPetFrequencyMultiplier => CE_PetFrequencyMultiplier.Value;
 
-
+        //internal const string ModOptionsGuid = "evilmask.elinplugins.modoptions";
+        public void lg(string t){
+            UnityEngine.Debug.Log(t);
+        }
         private void Start()
         {
-
+            // Mod Options loading
+            /*
+            var mod_options_loaded
+            foreach (var obj in ModManager.ListPluginObject)
+            {
+                var plugin = obj as BaseUnityPlugin;
+                if (plugin.Info.Metadata.GUID == ModOptionsGuid)
+                {
+                    // Mod Options is loaded, you can do
+                    // registeration now.
+                    break;
+                }
+            }
+            */
             // 設定項目の初期化
             CE_IsPlayerGetableExp = Config.Bind("#0General", "FLAG_PCGetableExp", true, "ENABLE PC Getable Exp");
             CE_IsPetGetableExp = Config.Bind("#0General", "FLAG_PetGetableExp", false, "ENABLE Pet Getable Exp");
@@ -63,10 +79,23 @@ namespace AdditionalSU
             CE_PetExpMultiplier = Config.Bind("#2Cheat", "Pet_ExpMultiplier", 1.0f, "(Pet)Exp Multiplier : 0.01 to 100");
             CE_PetFrequencyMultiplier = Config.Bind("#2Cheat", "Pet_FrequencyMultiplier", 1.0f, "(Pet)Frequency Multiplier : 0.1 to 10");
 
-            
+            //debugtext for config
+            string debt = ("PGE:" + IsPlayerGetableExp.ToString());
+            debt += ("][PeGE:" + IsPetGetableExp.ToString());
+            debt += ("][DIW:" + DoInfluenceWeight.ToString());
+            debt += ("][IDM:" + IsDebugMode.ToString());
+            debt += ("][ICM:" + IsCheatMode.ToString());
+            debt += ("][DPFAE:" + DoPCForceAwardExp.ToString());
+            debt += ("][PPEM:" + ParamPCExpMultiplier.ToString());
+            debt += ("][PPFM:" + ParamPCFrequencyMultiplier.ToString());
+            debt += ("][DPeFAE:" + DoPetForceAwardExp.ToString());
+            debt += ("][PPeEM:" + ParamPetExpMultiplier.ToString());
+            debt += ("][PPeFM:" + ParamPetFrequencyMultiplier.ToString());
 
-            var harmony = new Harmony("AWLMain");
-            new Harmony("AWLMain").PatchAll();
+            lg("[ASU:Loaded]" + debt);
+
+            var harmony = new Harmony("ASUMain");
+            new Harmony("ASUMain").PatchAll();
         }
     }
 }
