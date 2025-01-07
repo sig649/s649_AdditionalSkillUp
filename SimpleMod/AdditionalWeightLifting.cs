@@ -289,7 +289,7 @@ namespace ASUPatch
             int resultSt = 0;
             int youAreSeen = 0;
             if(!c.IsPC){return;}
-            if(rng(0,15) != 0){return;}
+            if(rng(0,9) != 0){return;}
             if(c.enemy != null || isOnGlobalMap()){return;}  //c は戦闘中ではない//globalmapはだめ
             
             for (int i = 0; i < EClass._map.charas.Count; i++){
