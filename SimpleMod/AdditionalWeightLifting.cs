@@ -192,22 +192,22 @@ namespace ASUPatch
             float fExp = 0.0f;
             //++++++++  calc for execute +++++++++++++++++++++++++++++++++++++++++
             if (!configInfluenceWeight) {
-                sd2 = 100;
+                sd2 = 10;
                 //rmax = 100;
             } else
             {
-                sd2 = rmax;
+                sd2 = (int)Mathf.Sqrt(rmax);
             }
-            sd2 = (sd2 > 10000) ? 10000 : sd2;    //limiter 0~10000
+            sd2 = (sd2 > 100) ? 100 : sd2;    //limiter 0~100
 
             
             for(int i = 0; i < atari1stGatya; i++){
                 fExp += (float)rng(0, sd2);
             }
-
+            fExp /= 10f;
             if (configCheat) { resExp = (int)(fExp * expMulti); }
                 else {resExp = (int)fExp;}
-            resExp /= 100;
+            //resExp /= 100;
             
             
             if (resExp < 1) { resExp = 1; }        //最少1exp
