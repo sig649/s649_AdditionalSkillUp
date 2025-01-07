@@ -287,6 +287,7 @@ namespace ASUPatch
             partStealth:
             int countStealthAnother = 0;
             int resultSt = 0;
+            int youAreSeen = 0;
             if(!c.IsPC){return;}
             if(rng(0,15) != 0){return;}
             if(c.enemy != null || isOnGlobalMap()){return;}  //c は戦闘中ではない//globalmapはだめ
@@ -306,15 +307,18 @@ namespace ASUPatch
                 }
                 if(!EClass.pc.CanSeeLos(tg))  {
                     countStealthAnother++;
+                } else {
+                    youAreSeen++;
                 }
                 
             }
-            resultSt = countStealthAnother - c.stealthSeen;
+            resultSt = countStealthAnother - c.stealthSeen - youAreSeen;
             if(resultSt > 0){
                 c.ModExp(ID_Stealth, resultSt);
             }
             string text = ("[ASU]Charas : " + EClass._map.charas.Count.ToString());
                        text += (" [Stsn:" + c.stealthSeen.ToString() + "]");
+                       text += (" [YAsn:" + youAreSeen.ToString() + "]");
                         text += (" [CSA:" + countStealthAnother.ToString() + "]");
                         text += (" [RS:" + resultSt.ToString() + "]");
                 logging(text);
