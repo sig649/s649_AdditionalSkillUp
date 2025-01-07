@@ -141,9 +141,7 @@ namespace ASUPatch
 
 
 
-            //------local num-------------------------------------------------------------------
-            int r1, r2;     //乱数
-            int sd1, sd2;   //シード値
+            
 
             // -------- local num for gatya -----------------------//vanillaのModweightの処理を参考に
             int minw = (h * h) * 18 / 25;   // [mS:g]   //not use
@@ -164,6 +162,10 @@ namespace ASUPatch
             int atari1stGatya = 0;    //抽選結果:当たり回数
             int resExp = 0;           //取得経験値(ModExpの処理に準ずる)
 
+
+            //------local num-------------------------------------------------------------------
+            int r1;     //乱数
+            int sd1, sd2;   //シード値
             // ++++++++ 一次抽選 +++++++++++++++++++++++++++++++++
             const int IWRLIMIT = 200;  //seed1の上限
             sd1 = (iwr > IWRLIMIT) ? IWRLIMIT : iwr;           // seed1 0~200 の範囲のシード
@@ -187,7 +189,7 @@ namespace ASUPatch
             
             //logging("aftergatya");                                             
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+            float fExp = 0.0f;
             //++++++++  calc for execute +++++++++++++++++++++++++++++++++++++++++
             if (!configInfluenceWeight) {
                 sd2 = 100;
@@ -198,7 +200,7 @@ namespace ASUPatch
             }
             sd2 = (sd2 > 10000) ? 10000 : sd2;    //limiter 0~10000
 
-            float fExp = 0.0f;
+            
             for(int i = 0; i < atari1stGatya; i++){
                 fExp += (float)rng(0, sd2);
             }
@@ -214,7 +216,7 @@ namespace ASUPatch
             //logging("before exe");
             // **************** execute ****************************************************
             // 成否判定 : 
-            if (atari1stGatya == 0 || !flagHasWL) { goto labelDebugOut; } //こっちでもいいような気がするが見やすさの為->こっちにした
+            if (atari1stGatya == 0 || !flagHasWL) { goto partStealth; } //こっちでもいいような気がするが見やすさの為->こっちにした
             /*
             if (!configCheat)//チートしない？
             {
@@ -229,12 +231,11 @@ namespace ASUPatch
             */
 
             //if (!flagHasWL) { goto labelDebugOut; }  //スキル所持？
-            if (flagGetableExp) { c.ModExp(207, resExp); }
-
+            if (flagGetableExp) { c.ModExp(ID_WL, resExp); }
 
             
 
-            labelDebugOut:
+            //labelDebugOut:
             // @@@@@@@@ debug_info_output @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             
             //------debugtext for refference info
@@ -257,7 +258,7 @@ namespace ASUPatch
             // ------debug text for execute ---------------------------------------------
 
             string rt = ("atari:" + atari1stGatya.ToString());
-            rt += ("][resE:" + resExp.ToString());
+            if(atari1stGatya != 0){rt += ("][resE:" + resExp.ToString());}
             rt += ("][sd1:" + sd1.ToString());
             rt += ("][sd2:" + sd2.ToString());
             //rt += ("/f2:" + f2.ToString());
@@ -279,12 +280,44 @@ namespace ASUPatch
                 //logging("[AWL] gatya -> [" + gatyaT + "]");
                 //logging("[AWL] locals : -> [" + loct + "]");
                 logging("[AWL] Result -> [" + rt + "]");
-                
+
             }
 
-
-
-
+            //++++++++++++ stealth ++++++++++++++++++++++++++++++++++++++++++++++++++
+            partStealth:
+            int countStealthAnother = 0;
+            int resultSt = 0;
+            if(!c.IsPC){return;}
+            if(rng(0,15) != 0){return;}
+            if(c.enemy != null || isOnGlobalMap()){return;}  //c は戦闘中ではない//globalmapはだめ
+            
+            for (int i = 0; i < EClass._map.charas.Count; i++){
+                Chara tg = EClass._map.charas[i];
+                //logging("tg:[" + tg.GetName(NameStyle.Simple) + "/" + tg.IsPCParty.ToString() + "/" + tg.CanSee(c) + "]");
+                if (tg == c || tg.IsHostile(c)|| tg.IsPCParty || !tg.CanSee(c))
+                {
+                    continue;
+                }
+                int num2 = tg.Dist(c);
+                int num3 = tg.GetSightRadius();
+                if (num2 > num3)
+                {
+                    continue;
+                }
+                if(!EClass.pc.CanSeeLos(tg))  {
+                    countStealthAnother++;
+                }
+                
+            }
+            resultSt = countStealthAnother - c.stealthSeen;
+            if(resultSt > 0){
+                c.ModExp(ID_Stealth, resultSt);
+            }
+            string text = ("[ASU]Charas : " + EClass._map.charas.Count.ToString());
+                       text += (" [Stsn:" + c.stealthSeen.ToString() + "]");
+                        text += (" [CSA:" + countStealthAnother.ToString() + "]");
+                        text += (" [RS:" + resultSt.ToString() + "]");
+                logging(text);
             //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         /*
         [HarmonyPostfix]
