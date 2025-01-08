@@ -245,8 +245,7 @@ namespace ASUPatch
             reft += ("/wl:" + wl.ToString());       //限界
             reft += ("/HasWL:" + flagHasWL.ToString());     //WL持ち？
             reft += ("/bWL:" + cWLbase.ToString() + "&" + cWLexp.ToString());    //WL値
-            reft += ("/HasSt:" + flagHasStealth.ToString());
-            reft += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
+            
             //------debugtext for local info
             //string loct = ("minw:" + minw.ToString());  //最小体重
             //loct += ("/maxw:" + maxw.ToString());       //最大体重
@@ -290,7 +289,7 @@ namespace ASUPatch
             int youAreSeen = 0;
             if(!c.IsPC){return;}
             if(rng(0,9) != 0){return;}
-            if(c.enemy != null || isOnGlobalMap()){return;}  //c は戦闘中ではない//globalmapはだめ
+            if(c.enemy != null || !CanGetStealthExpArea()){return;}  //c は戦闘中ではない//エリア指定
             
             for (int i = 0; i < EClass._map.charas.Count; i++){
                 Chara tg = EClass._map.charas[i];
@@ -321,8 +320,12 @@ namespace ASUPatch
                        text += (" [YAsn:" + youAreSeen.ToString() + "]");
                         text += (" [CSA:" + countStealthAnother.ToString() + "]");
                         text += (" [RS:" + resultSt.ToString() + "]");
+                        text += ("/HasSt:" + flagHasStealth.ToString());
+                        text += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
                 logging(text);
-            //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        
+        //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         /*
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Zone), "Activate")]
@@ -335,7 +338,15 @@ namespace ASUPatch
         */
 
         }
-
+        public static bool CanGetStealthExpArea(){
+            string cz = EClass.pc.currentZone.id;
+            if(EClass.pc.currentZone.IsTown){return true;}
+            if(cz == "startSite" || cz == "instance_music"){
+                return true;
+            }
+            
+            return false;
+        }
         
     }
 }
