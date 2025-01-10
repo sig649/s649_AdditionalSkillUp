@@ -16,6 +16,7 @@ namespace ASUPatch
     public class PatchAct {
         internal const int ID_WL = 207;
         internal const int ID_Stealth = 152;
+        internal const int ID_DoorOpen = 280;
 
         //+++++++++++ config loading ++++++++++++++++++++++++++++++++++++++++++
         static bool configPCGetableExp => AdditionalSU.ASUMain.IsPlayerGetableExp;
@@ -324,6 +325,7 @@ namespace ASUPatch
                         text += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
                 logging(text);
 
+            
         
         //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         /*
@@ -347,7 +349,33 @@ namespace ASUPatch
             
             return false;
         }
+        //++++++++++ part:DoorOpen ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        [HarmonyPatch(typeof(TraitDoor))]
+        public class PatchTrait {
+
+            [HarmonyPrefix]
+            [HarmonyPatch(nameof(TraitDoor.TryOpen))]
+            static void FookPreExe(TraitDoor __instance, Chara c, ref bool __state){
+                __state = __instance.IsOpen() ? true : false;
+            }
         
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(TraitDoor.TryOpen))]
+            static void FookPostExe(TraitDoor __instance, Chara c, bool __state){
+                if(!__state && __instance.IsOpen()){
+                    if(c.IsPC && ASUPatch.PatchAct.rng(0,3) == 0){ 
+                        Lg("[ASU]TraitDoor.Close->Open!" + c.ToString());
+                        c.ModExp(ID_DoorOpen, 1);
+                    }
+                }
+            
+            }
+            public static void Lg(string t)
+            {
+                UnityEngine.Debug.Log(t);
+            }
+        }
+
     }
 }
 
