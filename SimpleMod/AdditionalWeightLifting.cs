@@ -53,7 +53,6 @@ namespace ASUPatch
         { 
             int rsd = UnityEngine.Random.Range(0, seed);
             return (r1 >= rsd) ? 1 : 0;
-            //return UnityEngine.Random.Range(0, seed) < r1;
         }
 
         public static bool isOnGlobalMap(){
@@ -90,17 +89,14 @@ namespace ASUPatch
         public static void TickConditions_PostPatch(Chara __instance)
         {
             // **********負荷軽減のためのゼロ次抽選*************************************
-            //logging("Fooked : TC" + isOnGlobalMap().ToString());
             if(isOnGlobalMap()){
                 if(rng(0,9) != 0){ return; }
             }
-            //if (UnityEngine.Random.Range(0, 99) >= 50) { return; }  //強制return 毎Tは流石に自粛 //0にすると毎T
-
-            
+           
             Chara c = __instance;  //c の読み込み
             bool flagPC = c.IsPC; 
             if (!(c.IsPC || c.IsPCParty)) { return; }   //PC or Pet check　　強制return2
-            //logging("C is " + c.ToString());
+            
             //+++++++++++++configの処理++++++++++++++++++++++++++++++++++++++++++++
             float freqMulti = getFreqMulti(c); //乗算用  //configCheat時用
             float expMulti = getExpMulti(c);  //同上
@@ -109,21 +105,10 @@ namespace ASUPatch
             bool flagGetableExp = isGetableExp(c);  //経験値取得可能か
 
             //*********  cの参照 *********************************************
-            
-            
-            
-            
             Element eWL = c.elements.GetElement(ID_WL);
             Element eStealth = c.elements.GetElement(ID_Stealth);
             bool flagHasWL = (eWL != null) ? true : false; //スキル所持チェック
             bool flagHasStealth = (eStealth != null) ? true : false; //スキル所持チェック
-
-            //logging("C ref finish");
-           
-            //if (c.IsPC) { flagPC = true; flagPet = false; } //flagSet
-            //else { flagPC = false; flagPet = true; }
-
-            
 
             //--- c status refference ---------------------------------------------------------------
             int inv, wl, iwr;    //所持重量[g:mS]/重量限界[g:mS]/所持重量比[%]
@@ -140,10 +125,6 @@ namespace ASUPatch
             int cSteBase = (eStealth != null) ? eStealth.vBase : 0;
             int cSteExp = (eStealth != null) ? eStealth.vExp : 0;
 
-
-
-            
-
             // -------- local num for gatya -----------------------//vanillaのModweightの処理を参考に
             int minw = (h * h) * 18 / 25;   // [mS:g]   //not use
             int maxw = (h * h) * 24 / 10;   // [mS:g]
@@ -153,9 +134,9 @@ namespace ASUPatch
             //int wrmax = maxw  * 100/ minw ; // [%] const int 333?参考
 
             //----- gatya time----------------------------------------------------
-            //logging("before gatya");
-            //bool flag1stGatya;  //抽選判定
-            int gatyaTickets;
+            
+            //bool flag1stGatya;  
+            int gatyaTickets;   //抽選判定
             if(flagHasWL){
                 gatyaTickets = (isOnGlobalMap()) ? 10 : 1; //抽選回数 //globalmapなら10連ガチャとする
             } else {gatyaTickets = 0;}
@@ -172,7 +153,6 @@ namespace ASUPatch
             sd1 = (iwr > IWRLIMIT) ? IWRLIMIT : iwr;           // seed1 0~200 の範囲のシード
 
             for(int i = 0; i < gatyaTickets; i++){
-                
                 r1 = rng(0, sd1 * sd1);       // 0 ~ 40000 の乱数?
 
                 //チートON なら、r1に頻度倍率を掛ける・・・下限を１としておきます
@@ -187,8 +167,7 @@ namespace ASUPatch
                     atari1stGatya += isProbabilityTrue(r1, IWRLIMIT * IWRLIMIT); 
                 }
             }
-            
-            //logging("aftergatya");                                             
+                                                        
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             float fExp = 0.0f;
             //++++++++  calc for execute +++++++++++++++++++++++++++++++++++++++++
@@ -214,27 +193,13 @@ namespace ASUPatch
             if (resExp < 1) { resExp = 1; }        //最少1exp
             if (resExp > 1000) { resExp = 1000; }  //経験値上限1000exp
 
-            //logging("before exe");
             // **************** execute ****************************************************
             // 成否判定 : 
             if (atari1stGatya == 0 || !flagHasWL) { goto partStealth; } //こっちでもいいような気がするが見やすさの為->こっちにした
-            /*
-            if (!configCheat)//チートしない？
-            {
-                //チート無効
-                if (!flag1stGatya) { goto labelDebugOut; }
-            }
-            else
-            {
-                //チート有効
-                if (!flag1stGatya && !flagFAE) { goto labelDebugOut; }
-            }
-            */
+            
 
             //if (!flagHasWL) { goto labelDebugOut; }  //スキル所持？
             if (flagGetableExp) { c.ModExp(ID_WL, resExp); }
-
-            
 
             //labelDebugOut:
             // @@@@@@@@ debug_info_output @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -270,7 +235,6 @@ namespace ASUPatch
            // gatyaT += ("][tg:" + tg.ToString());
 
             
-            //logging("before deb out");
 
             if (configDebug && isGetableExp(c))
             {
@@ -323,21 +287,8 @@ namespace ASUPatch
                         text += (" [RS:" + resultSt.ToString() + "]");
                         text += ("/HasSt:" + flagHasStealth.ToString());
                         text += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
-                logging(text);
-
-            
-        
-        //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        /*
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Zone), "Activate")]
-        public static void Activate_PostPatch(Zone __instance){
-            Zone z = __instance;
-            //isAtGlobalMap = (z.getName(NameStyle.Simple) == )? : ;
-            //logging("[ASU] At:Activate : " + z.GetName(NameStyle.Simple));
-
-        }
-        */
+            if(configDebug){logging(text);}
+       
 
         }
         public static bool CanGetStealthExpArea(){
@@ -364,7 +315,7 @@ namespace ASUPatch
             static void FookPostExe(TraitDoor __instance, Chara c, bool __state){
                 if(!__state && __instance.IsOpen()){
                     if(c.IsPC && ASUPatch.PatchAct.rng(0,3) == 0){ 
-                        Lg("[ASU]TraitDoor.Close->Open!" + c.ToString());
+                        if(configDebug){Lg("[ASU]TraitDoor.Close->Open!" + c.ToString());}
                         c.ModExp(ID_DoorOpen, 1);
                     }
                 }
@@ -379,7 +330,8 @@ namespace ASUPatch
     }
 }
 
-
+ //@@@@@@@@@@@@@@@@ finish @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        
 
 ///trashbox////////////////////////////////////////////////////////////////////////////////////////
 ///
@@ -426,3 +378,26 @@ namespace ASUPatch
             */
             //}
 
+/*
+            if (!configCheat)//チートしない？
+            {
+                //チート無効
+                if (!flag1stGatya) { goto labelDebugOut; }
+            }
+            else
+            {
+                //チート有効
+                if (!flag1stGatya && !flagFAE) { goto labelDebugOut; }
+            }
+            */
+
+            /*
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Zone), "Activate")]
+        public static void Activate_PostPatch(Zone __instance){
+            Zone z = __instance;
+            //isAtGlobalMap = (z.getName(NameStyle.Simple) == )? : ;
+            //logging("[ASU] At:Activate : " + z.GetName(NameStyle.Simple));
+
+        }
+        */
