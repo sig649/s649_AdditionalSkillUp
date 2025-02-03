@@ -19,19 +19,21 @@ namespace ASUPatch
         internal const int ID_DoorOpen = 280;
 
         //+++++++++++ config loading ++++++++++++++++++++++++++++++++++++++++++
-        static bool configPCGetableExp => AdditionalSU.ASUMain.IsPlayerGetableExp;
-        static bool configPetGetableExp => AdditionalSU.ASUMain.IsPetGetableExp;
-        static bool configInfluenceWeight => AdditionalSU.ASUMain.DoInfluenceWeight;
+        static bool flagWLPCGetableExp => AdditionalSU.ASUMain.Flag_WL_PC_EnableSkillUp;
+        static bool flagWLPetGetableExp => AdditionalSU.ASUMain.Flag_WL_Pet_EnableSkillUp;
+        //static bool configInfluenceWeight => AdditionalSU.ASUMain.DoInfluenceWeight;//haisi
+        static bool flagStealthPCGetableExp => AdditionalSU.ASUMain.Flag_Stealth_PC_EnableSkillUp;
+        static bool flagLockPickingPCGetableExp => AdditionalSU.ASUMain.Flag_LockPicking_PC_EnableSkillUp;
 
         static bool configDebug => AdditionalSU.ASUMain.IsDebugMode;
-        static bool configCheat => AdditionalSU.ASUMain.IsCheatMode;
-        static bool configPCFAE => AdditionalSU.ASUMain.DoPCForceAwardExp;
-        static bool configPetFAE => AdditionalSU.ASUMain.DoPetForceAwardExp;
+        //static bool configCheat => AdditionalSU.ASUMain.IsCheatMode;//haisi
+        //static bool configPCFAE => AdditionalSU.ASUMain.DoPCForceAwardExp;//haisi
+        //static bool configPetFAE => AdditionalSU.ASUMain.DoPetForceAwardExp;//haisi
 
-        static float configPCExpM => AdditionalSU.ASUMain.ParamPCExpMultiplier;
-        static float configPetExpM => AdditionalSU.ASUMain.ParamPetExpMultiplier;
-        static float configPCFreqM => AdditionalSU.ASUMain.ParamPCFrequencyMultiplier;
-        static float configPetFreqM => AdditionalSU.ASUMain.ParamPetFrequencyMultiplier;
+        static float fWLPCExpMulti => AdditionalSU.ASUMain.Float_WL_PC_ExpMultiplier;
+        static float fWLPetExpMulti => AdditionalSU.ASUMain.Float_WL_Pet_ExpMultiplier;
+        //static float configPCFreqM => AdditionalSU.ASUMain.ParamPCFrequencyMultiplier;//haisi
+        //static float configPetFreqM => AdditionalSU.ASUMain.ParamPetFrequencyMultiplier;//haisi
 
         //++++++++++++  メソッド　+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         public static void logging(string t)
@@ -42,28 +44,28 @@ namespace ASUPatch
         public static bool isGetableExp(Chara c)  //configから読み込む
         {
             if(c.IsPC){
-                return configPCGetableExp;
+                return flagWLPCGetableExp;
             }else{
-                return configPetGetableExp;
+                return flagWLPetGetableExp;
             }
         }
-
+        /*
         /////seedをベースにr1で抽選 && r1>=seedならtrue  ///return をintに変更
         public static int isProbabilityTrue(int r1, int seed)
         { 
             int rsd = UnityEngine.Random.Range(0, seed);
             return (r1 >= rsd) ? 1 : 0;
         }
-
-        public static bool isOnGlobalMap(){
+        */
+        internal static bool isOnGlobalMap(){
             return (EClass.pc.currentZone.id == "ntyris") ? true : false;
         }
-        public static int rng(int min, int max){
+        internal static int rng(int min, int max){
             return UnityEngine.Random.Range(min, max);
         }
 
-        public static float getExpMulti(Chara c){
-            float f = (c.IsPC) ? configPCExpM : configPetExpM;
+        internal static float getExpMulti(Chara c){
+            float f = (c.IsPC) ? fWLPCExpMulti : fWLPetExpMulti;
             //範囲異常の処理
             //if (f < 0.01 || f > 100) { f = 1.0f; }
             if(f < 0.01){ f = 0.01f; } else {
@@ -71,8 +73,8 @@ namespace ASUPatch
             }
             return f;
         }
-
-        public static float getFreqMulti(Chara c){
+        /*
+        public static float getFreqMulti(Chara c){//haisi
             float f = (c.IsPC) ? configPCFreqM : configPetFreqM;
             //範囲異常の処理
             //if (f < 0.1 || f > 10) { f = 1.0f; }
@@ -81,7 +83,7 @@ namespace ASUPatch
             }
             return f;
         }
-        
+        */
 
 
         [HarmonyPostfix]
@@ -90,7 +92,7 @@ namespace ASUPatch
         {
             // **********負荷軽減のためのゼロ次抽選*************************************
             if(isOnGlobalMap()){
-                if(rng(0,9) != 0){ return; }
+                if(rng(0,19) != 0){ return; }
             }
            
             Chara c = __instance;  //c の読み込み
@@ -98,11 +100,12 @@ namespace ASUPatch
             if (!(c.IsPC || c.IsPCParty)) { return; }   //PC or Pet check　　強制return2
             
             //+++++++++++++configの処理++++++++++++++++++++++++++++++++++++++++++++
-            float freqMulti = getFreqMulti(c); //乗算用  //configCheat時用
-            float expMulti = getExpMulti(c);  //同上
+            //float freqMulti = getFreqMulti(c); //haisi
+            float expMulti = getExpMulti(c);  //
 
-            bool flagFAE = (flagPC) ? configPCFAE : configPetFAE;//強制判定のコンフィグ呼びだし
+            //bool flagFAE = (flagPC) ? configPCFAE : configPetFAE;//強制判定のコンフィグ呼びだし
             bool flagGetableExp = isGetableExp(c);  //経験値取得可能か
+            //if(!flagGetableExp){goto partStealth;}
 
             //*********  cの参照 *********************************************
             Element eWL = c.elements.GetElement(ID_WL);
@@ -118,19 +121,19 @@ namespace ASUPatch
             iwr = inv * 100 / wl;     //所持重量比  [%]100以上で重荷
 
             //int w = c.bio.weight;      //[Kg ]  notuse
-            int sw = c.SelfWeight;       //[mS:g]体重
-            int h = c.bio.height;        //[cm]身長
+            //int sw = c.SelfWeight;       //[mS:g]体重
+            //int h = c.bio.height;        //[cm]身長
             int cWLbase = (eWL != null) ? eWL.vBase : 0;
             int cWLexp = (eWL != null) ? eWL.vExp : 0;
             int cSteBase = (eStealth != null) ? eStealth.vBase : 0;
             int cSteExp = (eStealth != null) ? eStealth.vExp : 0;
 
             // -------- local num for gatya -----------------------//vanillaのModweightの処理を参考に
-            int minw = (h * h) * 18 / 25;   // [mS:g]   //not use
-            int maxw = (h * h) * 24 / 10;   // [mS:g]
+            //int minw = (h * h) * 18 / 25;   // [mS:g]   //not use
+            //int maxw = (h * h) * 24 / 10;   // [mS:g]
 
-            int rmin = sw * 100 / minw;    // [%] 100~333?  //not use
-            int rmax = sw * 100 / maxw;    // [%] 100~333?
+            //int rmin = sw * 100 / minw;    // [%] 100~333?  //not use
+            //int rmax = sw * 100 / maxw;    // [%] 100~333?
             //int wrmax = maxw  * 100/ minw ; // [%] const int 333?参考
 
             //----- gatya time----------------------------------------------------
@@ -146,13 +149,17 @@ namespace ASUPatch
 
 
             //------local num-------------------------------------------------------------------
-            int r1;     //乱数
-            int sd1, sd2;   //シード値
+            //int r1;     //乱数
+            int sd1;   //シード値
             // ++++++++ 一次抽選 +++++++++++++++++++++++++++++++++
-            const int IWRLIMIT = 200;  //seed1の上限
-            sd1 = (iwr > IWRLIMIT) ? IWRLIMIT : iwr;           // seed1 0~200 の範囲のシード
+            const int IWRLIMIT = 10000;  //seed1の上限
+            sd1 = (iwr > IWRLIMIT) ? IWRLIMIT : iwr;           
 
             for(int i = 0; i < gatyaTickets; i++){
+                if(rng(sd1/2,sd1*2) > 100){
+                    atari1stGatya += (sd1 > 100)? (sd1 / 100): 1;
+                }
+                /*
                 r1 = rng(0, sd1 * sd1);       // 0 ~ 40000 の乱数?
 
                 //チートON なら、r1に頻度倍率を掛ける・・・下限を１としておきます
@@ -166,11 +173,18 @@ namespace ASUPatch
                 } else {
                     atari1stGatya += isProbabilityTrue(r1, IWRLIMIT * IWRLIMIT); 
                 }
+                */
             }
                                                         
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            float fExp = 0.0f;
+            //float fExp = 0.0f;
             //++++++++  calc for execute +++++++++++++++++++++++++++++++++++++++++
+            for(int i = 0; i < atari1stGatya; i++){
+                resExp += rng(sd1/2,sd1*2) * ((isOnGlobalMap())? 2 : 1);
+            }
+            resExp = (int)(resExp * expMulti);
+            resExp /= 100;
+            /*
             if (!configInfluenceWeight) {
                 sd2 = 10;
                 //rmax = 100;
@@ -178,17 +192,21 @@ namespace ASUPatch
             {
                 sd2 = (int)Mathf.Sqrt(rmax);
             }
-            sd2 = (sd2 > 100) ? 100 : sd2;    //limiter 0~100
+            */
+            //sd2 = (sd2 > 100) ? 100 : 10;    //limiter 0~100
+            /*
+            sd2 = 10;
 
             
             for(int i = 0; i < atari1stGatya; i++){
                 fExp += (float)rng(0, sd2);
             }
             fExp /= 10f;
+            if(fExp < 1f){fExp = 1f;}
             if (configCheat) { resExp = (int)(fExp * expMulti); }
                 else {resExp = (int)fExp;}
             //resExp /= 100;
-            
+            */
             
             if (resExp < 1) { resExp = 1; }        //最少1exp
             if (resExp > 1000) { resExp = 1000; }  //経験値上限1000exp
@@ -205,8 +223,8 @@ namespace ASUPatch
             // @@@@@@@@ debug_info_output @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             
             //------debugtext for refference info
-            string reft = ("sw:" + sw.ToString());  //体重
-            reft += ("/h:" + h.ToString());         //身長
+            string reft = "";  
+            //reft += ("/h:" + h.ToString());         //身長
             reft += ("/inv:" + inv.ToString());     //所持
             reft += ("/wl:" + wl.ToString());       //限界
             reft += ("/HasWL:" + flagHasWL.ToString());     //WL持ち？
@@ -225,7 +243,7 @@ namespace ASUPatch
             string rt = ("atari:" + atari1stGatya.ToString());
             if(atari1stGatya != 0){rt += ("][resE:" + resExp.ToString());}
             rt += ("][sd1:" + sd1.ToString());
-            rt += ("][sd2:" + sd2.ToString());
+            //rt += ("][sd2:" + sd2.ToString());
             //rt += ("/f2:" + f2.ToString());
             //rt += ("/f3:" + f2.ToString());
 
@@ -253,11 +271,13 @@ namespace ASUPatch
             int resultSt = 0;
             int youAreSeen = 0;
             if(!c.IsPC){return;}
+            if(!flagStealthPCGetableExp){return;}
             if(rng(0,9) != 0){return;}
             if(c.enemy != null || !CanGetStealthExpArea()){return;}  //c は戦闘中ではない//エリア指定
-            
+            int numNearCharas = 0;
             for (int i = 0; i < EClass._map.charas.Count; i++){
                 Chara tg = EClass._map.charas[i];
+                
                 //logging("tg:[" + tg.GetName(NameStyle.Simple) + "/" + tg.IsPCParty.ToString() + "/" + tg.CanSee(c) + "]");
                 if (tg == c || tg.IsHostile(c)|| tg.IsPCParty || !tg.CanSee(c))
                 {
@@ -269,6 +289,7 @@ namespace ASUPatch
                 {
                     continue;
                 }
+                numNearCharas++;
                 if(!EClass.pc.CanSeeLos(tg))  {
                     countStealthAnother++;
                 } else {
@@ -276,9 +297,9 @@ namespace ASUPatch
                 }
                 
             }
-            resultSt = countStealthAnother - c.stealthSeen - youAreSeen;
+            resultSt = countStealthAnother - c.stealthSeen - youAreSeen * youAreSeen;
             if(resultSt > 0){
-                c.ModExp(ID_Stealth, resultSt);
+                c.ModExp(ID_Stealth, resultSt * numNearCharas);
             }
             string text = ("[ASU]Charas : " + EClass._map.charas.Count.ToString());
                        text += (" [Stsn:" + c.stealthSeen.ToString() + "]");
@@ -287,7 +308,7 @@ namespace ASUPatch
                         text += (" [RS:" + resultSt.ToString() + "]");
                         text += ("/HasSt:" + flagHasStealth.ToString());
                         text += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
-            if(configDebug){logging(text);}
+            if(configDebug && resultSt > 0){logging(text);}
        
 
         }
@@ -313,6 +334,7 @@ namespace ASUPatch
             [HarmonyPostfix]
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPostExe(TraitDoor __instance, Chara c, bool __state){
+                if(!flagLockPickingPCGetableExp){return;}
                 if(!__state && __instance.IsOpen()){
                     if(c.IsPC && ASUPatch.PatchAct.rng(0,3) == 0){ 
                         if(configDebug){Lg("[ASU]TraitDoor.Close->Open!" + c.ToString());}
