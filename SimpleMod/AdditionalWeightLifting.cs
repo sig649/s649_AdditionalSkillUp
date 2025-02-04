@@ -290,8 +290,10 @@ namespace ASUPatch
                     continue;
                 }
                 numNearCharas++;
-                if(!EClass.pc.CanSeeLos(tg))  {
-                    countStealthAnother++;
+                if(!EClass.pc.CanSeeLos(tg)) {
+                    if(tg.hostility == Hostility.Friend || tg.hostility == Hostility.Ally){
+                        countStealthAnother++;
+                    }
                 } else {
                     youAreSeen++;
                 }
