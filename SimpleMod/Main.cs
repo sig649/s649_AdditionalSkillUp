@@ -20,20 +20,26 @@ namespace s649ASU
         {//>>>begin class:PatchExe
         //////-----Config Entry---------------------------------------------------------------------------------- 
             private static ConfigEntry<bool> CE_AllowFunction01WL;
+            private static ConfigEntry<int> CE_LogLevel;
+            
         //config--------------------------------------------------------------------------------------------------------------
             public static bool cf_Allow_F01_WL =>  CE_AllowFunction01WL.Value;
+            public static int cf_LogLevel =>  CE_LogLevel.Value;
+            
             //method------------------------------------------------------------------------------------------------------------------------------------------------------------
             internal void LoadConfig()
             {
                 CE_AllowFunction01WL = Config.Bind("#00-General","AllowF01WL", true, "Allow control of function 01-WL");
+                CE_LogLevel = Config.Bind("#zz-Debug","LogLevel", 0, "for debug use");
+
             }
-            //internal static void Log(string text)
-            //{
-            //    if(configDebugLogging)
-            //    {
-            //        Debug.Log(text);
-            //    }
-            //}
+            internal static void Log(string text, int lv = 0)
+            {
+                if(cf_LogLevel >= lv)
+                {
+                    Debug.Log(text);
+                }
+            }
             private void Start()
             {//>>>>begin method:Start
                 LoadConfig();

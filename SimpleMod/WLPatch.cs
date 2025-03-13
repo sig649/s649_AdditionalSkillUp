@@ -8,6 +8,7 @@ using BepInEx.Configuration;
 using Debug = UnityEngine.Debug;
 using System.Collections.Generic;
 using s649ASU.Main;
+//using Log = PatchMain.Log;
 
 
 namespace S649ASU
@@ -21,6 +22,9 @@ namespace S649ASU
             //----nakami-------------------
             internal const int ID_WL = 207;
             private static bool Func_Allowed => PatchMain.cf_Allow_F01_WL;
+            internal static void Log(string text, int lv = 0){
+                PatchMain.Log(text,lv);
+            }
             private static bool IsGlobalMap(){
                 return (EClass.pc.currentZone.id == "ntyris") ? true : false;
             }
@@ -43,23 +47,32 @@ namespace S649ASU
 
                     if(bd1 >= StatsBurden.Burden){
                         if(c.HasElement(ID_WL)){
+                            Element eWL = c.elements.GetElement(ID_WL);
                             c.ModExp(ID_WL, bd1 * bd1);
                             text += "/c:PC/";
                             text += "/bd:" + bd1.ToString();
+                            text += "/B:" + eWL.vBase.ToString();
+                            text += "/Ex:" + eWL.vExp.ToString();
+                            
                             //text += "/bd2:" + bd2.ToString();
-                            Debug.Log(text);
+                            Log(text,2);
                         }
                     }
                 } else if(!c.IsPC && c.IsPCParty){
-                    bd2 = c.GetBurden();
+                    //bd2 = c.GetBurden();
+                    bd2 = c.ChildrenWeight * 10 / c.WeightLimit;
                     if(EClass.rnd((bd2 >= 10)? 0 : 10-bd2) == 0){
                         if(c.HasElement(ID_WL))
                         {
+                            Element eWL = c.elements.GetElement(ID_WL);
                             c.ModExp(ID_WL, bd2 * bd2);
-                        ///string text = "[ASU]WL";
-                        text += "/c:" + SName(c) + "/";
-                        text += "/bd:" + bd2.ToString();
-                        Debug.Log(text);
+                            ///string text = "[ASU]WL";
+                            text += "/c:" + SName(c) + "/";
+                            text += "/bd:" + bd2.ToString();
+                            text += "/B:" + eWL.vBase.ToString();
+                            text += "/Ex:" + eWL.vExp.ToString();
+
+                            Log(text, 1);
                         }
                     }
                 }
