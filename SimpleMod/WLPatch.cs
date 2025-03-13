@@ -65,7 +65,7 @@ namespace S649ASU
                         if(c.HasElement(ID_WL))
                         {
                             Element eWL = c.elements.GetElement(ID_WL);
-                            c.ModExp(ID_WL, bd2 * bd2);
+                            c.ModExp(ID_WL, bd2 * 2);
                             ///string text = "[ASU]WL";
                             text += "/c:" + SName(c) + "/";
                             text += "/bd:" + bd2.ToString();
