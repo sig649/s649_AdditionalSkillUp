@@ -30,21 +30,21 @@ namespace S649ASU
 
             //method--------------------------------------------------------------------
             internal static void Log(string text, int lv = 0){
-                PatchMain.Log(text,lv);
+                Main.Log(text,lv);
             }
             private static bool IsGlobalMap(){
                 return (EClass.pc.currentZone.id == "ntyris") ? true : false;
             }
-            private static string SName(Chara c){
-                return c.GetName(NameStyle.Simple);
-            }
-            private int Gatya(int seed)
+            //private string SName(Chara c){
+            //    return Main.SName(c);
+            //}
+            private static int Gatya(int seed)
             {
                 int res = 0;
                 int border;
                 while(seed > 0)
                 {
-                    border = 100 * UnityEngine.Random.Range(0f,1f);
+                    border = (int)(100 * UnityEngine.Random.Range(0f,1f));
                     if(seed > border){res++;}
                     seed -= 100;
                 }
@@ -69,10 +69,10 @@ namespace S649ASU
                 //if(!enableASU_WL){return;}
                 int ph,exp,ticket,bd;
                 string text = "[ASU]TC";
-                if(c.IsPC && enableASU_WL){
-                    ph = c.burden.GetPhase();
+                if(c.IsPC && enableASU_WL && c.HasElement(ID_WL)){
+                    ph = c.burden.GetPhase();//重荷レベルに応じて0-9の値
                     //bd = c.GetBurden(c.held);
-                    if(ph >= StatsBurden.Burden && c.HasElement(ID_WL)){
+                    if(ph >= StatsBurden.Burden){
                         Element eWL = c.elements.GetElement(ID_WL);
                         ticket = Gatya(ph * freq_WL_Base);
                         bd = (rule_CWForceValue)?  (c.ChildrenWeight * 10 / c.WeightLimit) : ph;
@@ -90,7 +90,7 @@ namespace S649ASU
                             Log(text,2);
                         }
                     }
-                } else if(!c.IsPC && c.IsPCParty && enableASU_WL){
+                } else if(!c.IsPC && c.IsPCParty && enableASU_WL && c.HasElement(ID_WL)){
                     //bd2 = c.GetBurden();
                     ph = c.ChildrenWeight * 10 / c.WeightLimit;
                     //bd = c.ChildrenWeight * 10 / c.WeightLimit;
@@ -104,8 +104,8 @@ namespace S649ASU
                             c.ModExp(ID_WL, bd * 2 * ticket);
 
                             ///string text = "[ASU]WL";
-                            text += "/c:" + SName(c) + "/";
-                            text += "/bd:" + bd2.ToString();
+                            text += "/c:" + Main.SName(c) + "/";
+                            text += "/bd:" + bd.ToString();
                             text += "/B:" + eWL.vBase.ToString();
                             text += "/Ex:" + eWL.vExp.ToString();
 
@@ -117,8 +117,8 @@ namespace S649ASU
                 int countStealthAnother = 0;
                 int resultSt = 0;
                 int youAreSeen = 0;
-                if(!c.IsPC){return;}
-                if(!enableASU_Stealth){return;}
+                if(!c.IsPC || !enableASU_Stealth || !c.HasElement(ID_Stealth)){return;}
+                //if(){return;}
                 if(UnityEngine.Random.Range(0,10) != 0){return;}
                 if(c.enemy != null || !CanGetStealthExpArea()){return;}  //c は戦闘中ではない//エリア指定
                 int numNearCharas = 0;
@@ -150,14 +150,14 @@ namespace S649ASU
             if(resultSt > 0){
                 c.ModExp(ID_Stealth, resultSt * numNearCharas);
             }
-            string text = ("[Stealth]Charas : " + EClass._map.charas.Count.ToString());
-                       text += (" [Stsn:" + c.stealthSeen.ToString() + "]");
-                       text += (" [YAsn:" + youAreSeen.ToString() + "]");
-                        text += (" [CSA:" + countStealthAnother.ToString() + "]");
-                        text += (" [RS:" + resultSt.ToString() + "]");
-                        text += ("/HasSt:" + flagHasStealth.ToString());
-                        text += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
-            if(resultSt > 0){Log(text,1);}
+            string stext = ("[Stealth]Charas : " + EClass._map.charas.Count.ToString());
+                       stext += (" [Stsn:" + c.stealthSeen.ToString() + "]");
+                       stext += (" [YAsn:" + youAreSeen.ToString() + "]");
+                        stext += (" [CSA:" + countStealthAnother.ToString() + "]");
+                        stext += (" [RS:" + resultSt.ToString() + "]");
+                        //stext += ("/HasSt:" + flagHasStealth.ToString());
+                        //stext += ("/bSt:" + cSteBase.ToString() + "&" + cSteExp.ToString());
+            if(resultSt > 0){Log(stext,1);}
 
                 
             }//<<<<end method

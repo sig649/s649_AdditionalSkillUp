@@ -41,7 +41,7 @@ namespace s649ASU
             }
             public static int cf_ExpLPBase 
             {
-		        get {return Mathf.Clamp(CE_Value_LP_Base.Value,1,10);}
+		        get {return Mathf.Clamp(CE_Exp_LP_Base.Value,1,10);}
             }
             
             public static int cf_LogLevel =>  CE_LogLevel.Value;
@@ -54,7 +54,7 @@ namespace s649ASU
                 CE_AllowFunction03DoorOpen = Config.Bind("#00-General","AllowF03LockPicking", true, "Allow ASU control of function 03-LockPicking");
   
                 CE_Freq_WL_Base = Config.Bind("#01-WeightLifting","FreqBaseValue", 20, "Base value for frequency of obtaining EXP");
-                CE_Rule_ChildrenWeightForceValue = ("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available");
+                CE_Rule_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available");
                 CE_Exp_LP_Base = Config.Bind("#03-LockPicking","ExpBaseLockPicking", 1, "Base value for Lockpicking of obtaining EXP");
 
                 CE_LogLevel = Config.Bind("#zz-Debug","LogLevel", 0, "for debug use");
@@ -77,8 +77,12 @@ namespace s649ASU
             }
 
             //private string TorF(bool b){return (b)? "T": "F";}
-
-            
+            internal static string SName(Chara c){
+                return (c!= null)? c.GetName(NameStyle.Simple) : "-";
+            }
+            internal static string SName(Card c){
+                return (c!= null)? c.GetName(NameStyle.Simple) : "-";
+            }
         }//<<<end class:Main
     }//<<end namespaceSub
 }//<end namespaceMain

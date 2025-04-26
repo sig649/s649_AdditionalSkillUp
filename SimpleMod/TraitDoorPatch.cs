@@ -17,6 +17,8 @@ namespace s649ASU
         [HarmonyPatch(typeof(TraitDoor))]
         internal class PatchTrait 
         {
+            internal const int ID_DoorOpen = 280;
+
             [HarmonyPrefix]
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPreExe(TraitDoor __instance, Chara c, ref bool __state){
@@ -26,7 +28,7 @@ namespace s649ASU
             [HarmonyPostfix]
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPostExe(TraitDoor __instance, Chara c, bool __state){
-                if(!Main.cf_Allow_F03_LockPicking){return;}
+                if(!Main.cf_Allow_F03_LockPicking || !c.HasElement(ID_DoorOpen)){return;}
                 if(!__state && __instance.IsOpen())
                 {
                     if(c.IsPC && Range(0,4) == 0)
