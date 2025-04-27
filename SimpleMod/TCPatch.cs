@@ -25,7 +25,7 @@ namespace S649ASU
             private static bool enableASU_WL => Main.cf_Allow_F01_WL;
             private static bool enableASU_Stealth => Main.cf_Allow_F02_Stealth;
 
-            private static bool rule_CWForceValue => Main.cf_Rule_CWForceValue;
+            private static bool enable_CWForceValue => Main.cf_Enable_CWForceValue;
             private static int freq_WL_Base => Main.cf_FreqWLBase;
 
             //method--------------------------------------------------------------------
@@ -75,8 +75,8 @@ namespace S649ASU
                     if(ph >= StatsBurden.Burden){
                         Element eWL = c.elements.GetElement(ID_WL);
                         ticket = Gatya(ph * freq_WL_Base);
-                        bd = (rule_CWForceValue)?  (c.ChildrenWeight / c.WeightLimit) : ph;
-                        exp = (rule_CWForceValue)? (1 + bd) : (1+ ph*ph);
+                        bd = (enable_CWForceValue)?  (c.ChildrenWeight / c.WeightLimit) : ph;
+                        exp = (enable_CWForceValue)? (1 + bd) : (1+ ph*ph);
                         exp *= ticket;
                         
                         if(ticket > 0)

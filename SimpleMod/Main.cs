@@ -23,7 +23,7 @@ namespace s649ASU
             private static ConfigEntry<bool> CE_AllowFunction02Stealth;//StealthのASU
             private static ConfigEntry<bool> CE_AllowFunction03DoorOpen;//LockPickingのASU
 
-            private static ConfigEntry<bool> CE_Rule_ChildrenWeightForceValue;//所持重量(CW)が経験値の入手量に影響するかどうか。WMを入れている方向け
+            private static ConfigEntry<bool> CE_Enable_ChildrenWeightForceValue;//所持重量(CW)が経験値の入手量に影響するかどうか。WMを入れている方向け
             private static ConfigEntry<int> CE_Freq_WL_Base;//WLのASU頻度の基本値
             private static ConfigEntry<int> CE_Exp_LP_Base;//LockPickingのASUのEXPの基本値
             
@@ -34,7 +34,7 @@ namespace s649ASU
             public static bool cf_Allow_F02_Stealth =>  CE_AllowFunction02Stealth.Value;
             public static bool cf_Allow_F03_LockPicking =>  CE_AllowFunction03DoorOpen.Value;
 
-            public static bool cf_Rule_CWForceValue =>  CE_Rule_ChildrenWeightForceValue.Value;
+            public static bool cf_Enable_CWForceValue =>  CE_Enable_ChildrenWeightForceValue.Value;
             public static int cf_FreqWLBase 
             {
 		        get {return Mathf.Clamp(CE_Freq_WL_Base.Value,1,100);}
@@ -54,7 +54,7 @@ namespace s649ASU
                 CE_AllowFunction03DoorOpen = Config.Bind("#00-General","AllowF03LockPicking", true, "Allow ASU control of function 03-LockPicking");
   
                 CE_Freq_WL_Base = Config.Bind("#01-WeightLifting","FreqBaseValue", 20, "Base value for frequency of obtaining EXP");
-                CE_Rule_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available");
+                CE_Enable_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available");
                 CE_Exp_LP_Base = Config.Bind("#03-LockPicking","ExpBaseLockPicking", 1, "Base value for Lockpicking of obtaining EXP");
 
                 CE_LogLevel = Config.Bind("#zz-Debug","LogLevel", 0, "for debug use");
