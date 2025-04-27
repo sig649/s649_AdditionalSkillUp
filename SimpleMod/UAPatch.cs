@@ -21,13 +21,32 @@ namespace s649ASU
             //---entry------------------------------
             
             //----nakami-------------------
+            //AmbiguousMatchException対策
+            //new Type[] { typeof(string), typeof(Card), typeof(Point), typeof(bool)}
+            //new Type[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool)}
+
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(Chara), "UseAbility")]
-            internal static void UAPostfix(Chara __instance, ref string idAct, ref Card tc, ref Point pos, ref bool pt)
+            [HarmonyPatch(typeof(Chara), "UseAbility",new Type[] { typeof(string), typeof(Card), typeof(Point), typeof(bool)})]
+            internal static void UAPostfixA(Chara __instance, ref string idAct, ref Card tc, ref Point pos, ref bool pt)
+            {
+
+                //nakami
+                //string dt = "[ASU-UA]";
+                //dt += Kakomu("idAct:" + idAct);
+                //dt += Kakomu("tc:" + Main.SName(tc));
+                //dt += Kakomu("pos:" + ((pos != null)? pos.ToString() : "-"));
+                //dt += Kakomu("pt:" + TorF(pt));
+                //Main.Log(dt,1);
+                
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Chara), "UseAbility", new Type[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool)})]
+            internal static void UAPostfixB(Chara __instance, ref Act a, ref Card tc, ref Point pos, ref bool pt)
             {
                 //nakami
                 string dt = "[ASU-UA]";
-                dt += Kakomu("idAct:" + idAct);
+                dt += Kakomu("Act:" + a.ToString());
                 dt += Kakomu("tc:" + Main.SName(tc));
                 dt += Kakomu("pos:" + ((pos != null)? pos.ToString() : "-"));
                 dt += Kakomu("pt:" + TorF(pt));

@@ -68,21 +68,30 @@ namespace S649ASU
                 //if(IsGlobalMap()){return;}
                 //if(!enableASU_WL){return;}
                 int ph,exp,ticket,bd;
-                string text = "[ASU]TC";
+                string text = "[s649-ASU:2]TC";
                 if(c.IsPC && enableASU_WL && c.HasElement(ID_WL)){
                     ph = c.burden.GetPhase();//重荷レベルに応じて0-9の値
                     //bd = c.GetBurden(c.held);
                     if(ph >= StatsBurden.Burden){
                         Element eWL = c.elements.GetElement(ID_WL);
                         ticket = Gatya(ph * freq_WL_Base);
-                        bd = (rule_CWForceValue)?  (c.ChildrenWeight * 10 / c.WeightLimit) : ph;
-                        exp = 1 + bd * bd;
+                        bd = (rule_CWForceValue)?  (c.ChildrenWeight / c.WeightLimit) : ph;
+                        exp = (rule_CWForceValue)? (1 + bd) : (1+ ph*ph);
+                        exp *= ticket;
                         
                         if(ticket > 0)
                         {
-                            c.ModExp(ID_WL, exp * ticket);
+                            c.ModExp(ID_WL, exp);
                             text += "/c:PC/";
-                            //text += "/bd:" + bd2.ToString();
+
+                            text += "/CW:" + c.ChildrenWeight.ToString();
+                            text += "/WL:" + c.WeightLimit.ToString();
+                            
+                            text += "/ph:" + ph.ToString();
+                            text += "/exp:" + exp.ToString();
+                            text += "/ticket:" + ticket.ToString();
+                            
+                            text += "/bd:" + bd.ToString();
                             text += "/B:" + eWL.vBase.ToString();
                             text += "/Ex:" + eWL.vExp.ToString();
                             
@@ -101,14 +110,22 @@ namespace S649ASU
                             Element eWL = c.elements.GetElement(ID_WL);
                             ticket = Gatya(ph * freq_WL_Base);
                             bd = ph;
-                            c.ModExp(ID_WL, bd * 2 * ticket);
+                            exp = bd * 2 * ticket;
+                            c.ModExp(ID_WL, exp);
 
                             ///string text = "[ASU]WL";
                             text += "/c:" + Main.SName(c) + "/";
+                            
+                            text += "/CW:" + c.ChildrenWeight.ToString();
+                            text += "/WL:" + c.WeightLimit.ToString();
+                            
+                            text += "/ph:" + ph.ToString();
+                            text += "/exp:" + exp.ToString();
+                            text += "/ticket:" + ticket.ToString();
+                            
                             text += "/bd:" + bd.ToString();
                             text += "/B:" + eWL.vBase.ToString();
                             text += "/Ex:" + eWL.vExp.ToString();
-
                             Log(text, 2);
                         }
                     //}
