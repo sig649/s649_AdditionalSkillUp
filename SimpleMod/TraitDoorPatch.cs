@@ -17,31 +17,61 @@ namespace s649ASU
         [HarmonyPatch(typeof(TraitDoor))]
         internal class PatchTrait 
         {
+            private static TraitDoor instance;
+            private static string StrHarmonyPatchClass = "TraitDoor";
+            private static string StrFookMethod = "";
             internal const int ID_DoorOpen = 280;
+            private static bool Enable_LP_ASU => Main.cf_Allow_F03_LockPicking;
+            private static int FreqLPValue => Main.cf_FreqLPValue;
 
             [HarmonyPrefix]
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPreExe(TraitDoor __instance, Chara c, ref bool __state){
+                instance = __instance;
                 __state = __instance.IsOpen() ? true : false;
             }
         
             [HarmonyPostfix]
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPostExe(TraitDoor __instance, Chara c, bool __state){
-                if(!Main.cf_Allow_F03_LockPicking || !c.HasElement(ID_DoorOpen)){return;}
-                if(!__state && __instance.IsOpen())
+                StrFookMethod = "TryOpen:post";
+
+                if(__instance != instance) { return; }//nennnotame
+                if (!__state && __instance.IsOpen())
                 {
-                    if(c.IsPC && Range(0,4) == 0)
+                    bool chance = Chance(FreqLPValue);
+                    string dstr = "/" + StrHarmonyPatchClass + "/" + StrFookMethod;
+                    dstr += "/C:" + c.NameSimple;
+                    dstr += "/Allow:" + StrTF(Enable_LP_ASU);
+                    dstr += "/LP:" + StrTF(c.HasElement(ID_DoorOpen));
+                    dstr += "/Frq:" + FreqLPValue.ToString();
+                    dstr += "/TF:" + chance.ToString();
+
+                    if (c.IsPC && Enable_LP_ASU && c.HasElement(ID_DoorOpen) && chance)
                     { 
-                        Main.Log("[ASU]TraitDoor.Close->Open!" + c.ToString(),1);
+                        //Main.Log("[ASU]TraitDoor.Close->Open!" + c.ToString(),1);
                         c.ModExp(ID_DoorOpen, Main.cf_ExpLPBase);
                     }
+                    if (c.IsPC) { Main.Log(dstr, 1); }
+                    
                 }
             
             }
-            private static int Range(int a,int b)
+            //private static int Lower(int a,int b)
+            //{
+            //    return (a < b)? a: b;
+            //}
+            public static bool Chance(int num)
             {
-                return UnityEngine.Random.Range(a,b);
+                if (num <= 0) return false;
+                if (num >= 100) return true;
+
+                //Random rand = Random();
+                return EClass.rnd(100) < num;
+            }
+            private static string StrTF(bool b)
+            {
+                return (b)? "T" : "F";
             }
         }
     }//namespace sub

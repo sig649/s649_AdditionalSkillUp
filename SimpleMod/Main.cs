@@ -23,10 +23,11 @@ namespace s649ASU
             private static ConfigEntry<bool> CE_AllowFunction02Stealth;//StealthのASU
             private static ConfigEntry<bool> CE_AllowFunction03DoorOpen;//LockPickingのASU
 
-            private static ConfigEntry<bool> CE_Enable_ChildrenWeightForceValue;//所持重量(CW)が経験値の入手量に影響するかどうか。WMを入れている方向け
+            private static ConfigEntry<bool> CE_Enable_ChildrenWeightForceValue;//所持重量(CW)が経験値の入手量に影響するかどうか。WMを入れていないと意味はない
             private static ConfigEntry<int> CE_Freq_WL_Base;//WLのASU頻度の基本値
             private static ConfigEntry<int> CE_Exp_LP_Base;//LockPickingのASUのEXPの基本値
-            
+            private static ConfigEntry<int> CE_Freq_LP_Value;//LockPickingのASUのFreqの値
+
             private static ConfigEntry<int> CE_LogLevel;
             
         //config--------------------------------------------------------------------------------------------------------------
@@ -37,13 +38,17 @@ namespace s649ASU
             public static bool cf_Enable_CWForceValue =>  CE_Enable_ChildrenWeightForceValue.Value;
             public static int cf_FreqWLBase 
             {
-		        get {return Mathf.Clamp(CE_Freq_WL_Base.Value,1,100);}
+		        get {return Mathf.Clamp(CE_Freq_WL_Base.Value, 0, 100);}
             }
             public static int cf_ExpLPBase 
             {
-		        get {return Mathf.Clamp(CE_Exp_LP_Base.Value,1,10);}
+		        get {return Mathf.Clamp(CE_Exp_LP_Base.Value, 0, 10);}
             }
-            
+            public static int cf_FreqLPValue
+            {
+                get { return Mathf.Clamp(CE_Freq_LP_Value.Value, 0, 100); }
+            }
+
             public static int cf_LogLevel =>  CE_LogLevel.Value;
             
             //Loading------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -53,9 +58,11 @@ namespace s649ASU
                 CE_AllowFunction02Stealth = Config.Bind("#00-General","AllowF02Stealth", true, "Allow ASU control of function 02-Stealth");
                 CE_AllowFunction03DoorOpen = Config.Bind("#00-General","AllowF03LockPicking", true, "Allow ASU control of function 03-LockPicking");
   
-                CE_Freq_WL_Base = Config.Bind("#01-WeightLifting","FreqBaseValue", 20, "Base value for frequency of obtaining EXP");
-                CE_Enable_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available");
-                CE_Exp_LP_Base = Config.Bind("#03-LockPicking","ExpBaseLockPicking", 1, "Base value for Lockpicking of obtaining EXP");
+                CE_Freq_WL_Base = Config.Bind("#01-WeightLifting","FreqBaseValue", 20, "[%]Base value for frequency of obtaining ASU EXP");
+                CE_Enable_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available.(For Mod WeightModification)");
+                CE_Exp_LP_Base = Config.Bind("#03-LockPicking","ExpBaseLockPicking", 1, "Base value for Lockpicking of obtaining ASU EXP");
+                CE_Freq_LP_Value = Config.Bind("#03-LockPicking", "FreqLockPickingValue", 50, "Frequency value for Lockpicking of obtaining ASU EXP");
+
 
                 CE_LogLevel = Config.Bind("#zz-Debug","LogLevel", 0, "for debug use");
 
@@ -67,12 +74,16 @@ namespace s649ASU
                 var harmony = new Harmony("Main");
                 new Harmony("Main").PatchAll();
             }//<<<<end method:Start
+
+            //local props--------------------------------------------------------------------------
+            internal static string StrModName = "[s649-ASU]";
             //----methods----------------------------------------------------------------------------
             internal static void Log(string text, int lv = 0)
             {
+                string st = StrModName;
                 if(cf_LogLevel >= lv)
                 {
-                    Debug.Log(text);
+                    Debug.Log(st + "/" + text);
                 }
             }
 
@@ -83,7 +94,25 @@ namespace s649ASU
             internal static string SName(Card c){
                 return (c!= null)? c.GetName(NameStyle.Simple) : "-";
             }
+            /*
+            internal static string Kakomu(string name)
+            {
+                return "[" + name + "]";
+            }*/
         }//<<<end class:Main
+        /*
+        internal class LogName
+        {
+            public string Name = "";
+            public string Value = "";
+            public LogName(string name, string value)
+            {
+                Name = name;
+                Value = value;
+            }
+            public string GetStr()
+            { return Name + ":" + Value; }
+        }*/
     }//<<end namespaceSub
 }//<end namespaceMain
 

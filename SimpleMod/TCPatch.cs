@@ -165,7 +165,7 @@ namespace S649ASU
             }
             resultSt = countStealthAnother - c.stealthSeen - youAreSeen * youAreSeen;
             if(resultSt > 0){
-                c.ModExp(ID_Stealth, resultSt * numNearCharas);
+                c.ModExp(ID_Stealth, resultSt);
             }
             string stext = ("[Stealth]Charas : " + EClass._map.charas.Count.ToString());
                        stext += (" [Stsn:" + c.stealthSeen.ToString() + "]");
