@@ -9,16 +9,26 @@ using BepInEx.Configuration;
 
 using Debug = UnityEngine.Debug;
 using System.Collections.Generic;
+using s649ElinLog;
 //using s649ASU.Main;
 
 namespace s649ASU
 {//>begin namespaceMain
-    namespace PatchMain
+    namespace Core
     {//>>begin namespaceSub
         [BepInPlugin("s649_ASU", "Additional SkillUp", "1.0.0.0")]
         public class Main : BaseUnityPlugin
         {// class[Main]
-        //////-----Config Entry---------------------------------------------------------------------------------- 
+            //----const
+            internal const int ID_WL = 207;
+            internal const int ID_Stealth = 152;
+            internal const int ID_ControlMana = 302;
+            internal const int ID_ManaCapacity = 303;
+            internal const int ID_DoorOpen = 280;
+            internal const int ID_Riding = 226;
+            internal const int ID_Parasite = 227;
+
+            //////-----Config Entry---------------------------------------------------------------------------------- 
             private static ConfigEntry<bool> CE_AllowFunction01WL;//WeightLiftingのASU
             private static ConfigEntry<bool> CE_AllowFunction02Stealth;//StealthのASU
             private static ConfigEntry<bool> CE_AllowFunction03DoorOpen;//LockPickingのASU
@@ -28,7 +38,7 @@ namespace s649ASU
             private static ConfigEntry<int> CE_Exp_LP_Base;//LockPickingのASUのEXPの基本値
             private static ConfigEntry<int> CE_Freq_LP_Value;//LockPickingのASUのFreqの値
 
-            private static ConfigEntry<int> CE_LogLevel;
+            internal static ConfigEntry<int> CE_LogLevel;
             
         //config--------------------------------------------------------------------------------------------------------------
             public static bool cf_Allow_F01_WL =>  CE_AllowFunction01WL.Value;
@@ -59,7 +69,7 @@ namespace s649ASU
                 CE_AllowFunction03DoorOpen = Config.Bind("#00-General","AllowF03LockPicking", true, "Allow ASU control of function 03-LockPicking");
   
                 CE_Freq_WL_Base = Config.Bind("#01-WeightLifting","FreqBaseValue", 20, "[%]Base value for frequency of obtaining ASU EXP");
-                CE_Enable_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", true, "Whether ChildrenWeight affects the amount of experience available.(For Mod WeightModification)");
+                CE_Enable_ChildrenWeightForceValue = Config.Bind("#01-WeightLifting","ChildrenWeightForceValue", false, "Whether ChildrenWeight affects the amount of experience available.(For Mod WeightModification)");
                 CE_Exp_LP_Base = Config.Bind("#03-LockPicking","ExpBaseLockPicking", 1, "Base value for Lockpicking of obtaining ASU EXP");
                 CE_Freq_LP_Value = Config.Bind("#03-LockPicking", "FreqLockPickingValue", 50, "Frequency value for Lockpicking of obtaining ASU EXP");
 
@@ -71,7 +81,8 @@ namespace s649ASU
             private void Start()
             {//>>>>begin method:Start
                 LoadConfig();
-                var harmony = new Harmony("Main");
+                ElinLog.SetConfig(cf_LogLevel, "ASU");
+                //var harmony = new Harmony("Main");
                 new Harmony("Main").PatchAll();
             }//<<<<end method:Start
 

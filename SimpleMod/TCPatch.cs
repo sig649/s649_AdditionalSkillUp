@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 //using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Collections.Generic;
-using s649ASU.PatchMain;
+using s649ASU.Core;
 //using Log = PatchMain.Log;
 
 
@@ -20,8 +20,7 @@ namespace S649ASU
         internal class PatchExe
         {//>>>begin class:PatchExe
             //----entry-------------------
-            internal const int ID_WL = 207;
-            internal const int ID_Stealth = 152;
+            
             private static bool enableASU_WL => Main.cf_Allow_F01_WL;
             private static bool enableASU_Stealth => Main.cf_Allow_F02_Stealth;
 
@@ -32,9 +31,9 @@ namespace S649ASU
             internal static void Log(string text, int lv = 0){
                 Main.Log(text,lv);
             }
-            private static bool IsGlobalMap(){
-                return (EClass.pc.currentZone.id == "ntyris") ? true : false;
-            }
+            //private static bool IsGlobalMap(){
+            //    return (EClass.pc.currentZone.id == "ntyris") ? true : false;
+            //}
             //private string SName(Chara c){
             //    return Main.SName(c);
             //}
@@ -69,11 +68,11 @@ namespace S649ASU
                 //if(!enableASU_WL){return;}
                 int ph,exp,ticket,bd;
                 string text = "[s649-ASU:2]TC";
-                if(c.IsPC && enableASU_WL && c.HasElement(ID_WL)){
+                if(c.IsPC && enableASU_WL && c.HasElement(Main.ID_WL)){
                     ph = c.burden.GetPhase();//重荷レベルに応じて0-9の値
                     //bd = c.GetBurden(c.held);
                     if(ph >= StatsBurden.Burden){
-                        Element eWL = c.elements.GetElement(ID_WL);
+                        Element eWL = c.elements.GetElement(Main.ID_WL);
                         ticket = Gatya(ph * freq_WL_Base);
                         bd = (enable_CWForceValue)?  (c.ChildrenWeight / c.WeightLimit) : ph;
                         exp = (enable_CWForceValue)? (1 + bd) : (1+ ph*ph);
@@ -81,7 +80,7 @@ namespace S649ASU
                         
                         if(ticket > 0)
                         {
-                            c.ModExp(ID_WL, exp);
+                            c.ModExp(Main.ID_WL, exp);
                             text += "/c:PC/";
 
                             text += "/CW:" + c.ChildrenWeight.ToString();
@@ -99,19 +98,19 @@ namespace S649ASU
                             Log(text,2);
                         }
                     }
-                } else if(!c.IsPC && c.IsPCParty && enableASU_WL && c.HasElement(ID_WL)){
+                } else if(!c.IsPC && c.IsPCParty && enableASU_WL && c.HasElement(Main.ID_WL)){
                     //bd2 = c.GetBurden();
                     ph = c.ChildrenWeight * 10 / c.WeightLimit;
                     //bd = c.ChildrenWeight * 10 / c.WeightLimit;
                     //if(EClass.rnd((bd2 >= 10)? 0 : (10-bd2)*(10-bd2)) == 0){
 
-                        if(ph >= 5 && c.HasElement(ID_WL))
+                        if(ph >= 5 && c.HasElement(Main.ID_WL))
                         {
-                            Element eWL = c.elements.GetElement(ID_WL);
+                            Element eWL = c.elements.GetElement(Main.ID_WL);
                             ticket = Gatya(ph * freq_WL_Base);
                             bd = ph;
                             exp = bd * 2 * ticket;
-                            c.ModExp(ID_WL, exp);
+                            c.ModExp(Main.ID_WL, exp);
 
                             ///string text = "[ASU]WL";
                             text += "/c:" + Main.SName(c) + "/";
@@ -134,7 +133,7 @@ namespace S649ASU
                 int countStealthAnother = 0;
                 int resultSt = 0;
                 int youAreSeen = 0;
-                if(!c.IsPC || !enableASU_Stealth || !c.HasElement(ID_Stealth)){return;}
+                if(!c.IsPC || !enableASU_Stealth || !c.HasElement(Main.ID_Stealth)){return;}
                 //if(){return;}
                 if(UnityEngine.Random.Range(0,10) != 0){return;}
                 if(c.enemy != null || !CanGetStealthExpArea()){return;}  //c は戦闘中ではない//エリア指定
@@ -165,7 +164,7 @@ namespace S649ASU
             }
             resultSt = countStealthAnother - c.stealthSeen - youAreSeen * youAreSeen;
             if(resultSt > 0){
-                c.ModExp(ID_Stealth, resultSt);
+                c.ModExp(Main.ID_Stealth, resultSt);
             }
             string stext = ("[Stealth]Charas : " + EClass._map.charas.Count.ToString());
                        stext += (" [Stsn:" + c.stealthSeen.ToString() + "]");

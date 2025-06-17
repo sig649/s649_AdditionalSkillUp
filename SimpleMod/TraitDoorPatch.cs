@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 //using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Collections.Generic;
-using s649ASU.PatchMain;
+using s649ASU.Core;
 //using Log = PatchMain.Log;
 
 namespace s649ASU
@@ -20,7 +20,7 @@ namespace s649ASU
             private static TraitDoor instance;
             private static string StrHarmonyPatchClass = "TraitDoor";
             private static string StrFookMethod = "";
-            internal const int ID_DoorOpen = 280;
+            
             private static bool Enable_LP_ASU => Main.cf_Allow_F03_LockPicking;
             private static int FreqLPValue => Main.cf_FreqLPValue;
 
@@ -28,7 +28,7 @@ namespace s649ASU
             [HarmonyPatch(nameof(TraitDoor.TryOpen))]
             static void FookPreExe(TraitDoor __instance, Chara c, ref bool __state){
                 instance = __instance;
-                __state = __instance.IsOpen() ? true : false;
+                __state = __instance.IsOpen();
             }
         
             [HarmonyPostfix]
@@ -43,14 +43,14 @@ namespace s649ASU
                     string dstr = "/" + StrHarmonyPatchClass + "/" + StrFookMethod;
                     dstr += "/C:" + c.NameSimple;
                     dstr += "/Allow:" + StrTF(Enable_LP_ASU);
-                    dstr += "/LP:" + StrTF(c.HasElement(ID_DoorOpen));
+                    dstr += "/LP:" + StrTF(c.HasElement(Main.ID_DoorOpen));
                     dstr += "/Frq:" + FreqLPValue.ToString();
                     dstr += "/TF:" + chance.ToString();
 
-                    if (c.IsPC && Enable_LP_ASU && c.HasElement(ID_DoorOpen) && chance)
+                    if (c.IsPC && Enable_LP_ASU && c.HasElement(Main.ID_DoorOpen) && chance)
                     { 
                         //Main.Log("[ASU]TraitDoor.Close->Open!" + c.ToString(),1);
-                        c.ModExp(ID_DoorOpen, Main.cf_ExpLPBase);
+                        c.ModExp(Main.ID_DoorOpen, Main.cf_ExpLPBase);
                     }
                     if (c.IsPC) { Main.Log(dstr, 1); }
                     
