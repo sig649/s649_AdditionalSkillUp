@@ -162,7 +162,7 @@ namespace S649ASU
                 }
                 
             }
-            resultSt = countStealthAnother - c.stealthSeen - youAreSeen * youAreSeen;
+            resultSt = (youAreSeen == 0) ? countStealthAnother - c.stealthSeen : 0;
             if(resultSt > 0){
                 c.ModExp(Main.ID_Stealth, resultSt);
             }
