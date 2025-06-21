@@ -70,6 +70,17 @@ namespace s649ElinLog
             //LogDeepTry(text);
             Log(s, LogTier.Deep);
         }
+
+        public static void LogInfoTry(bool b, string st)
+        {
+            string text = b ? "Success!" : "Failed...";
+            LogInfo(st +"->"+ text);
+        }
+        public static void LogInfoTry(bool b)
+        {
+            string text = b ? "Success!" : "Failed...";
+            LogInfo(text);
+        }
         public static void LogInfo(string s, int lv)//旧式
         {
             LogInfo(s);

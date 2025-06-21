@@ -69,8 +69,10 @@ namespace s649ASU
                     Debug.Log(ex.StackTrace);
                     return;
                 }
+                if (!c_user.IsPC) { return; }
                 checktext = string.Join("/", checkThings);
                 LogDeep(checktext);
+                
                 /*
                 string dt = "[ASU-UA]";
                 dt += "C:" + StrConv(__instance);
@@ -85,7 +87,7 @@ namespace s649ASU
                     LogOther("Act is Spell");
                     if (c_user.IsPC) 
                     {
-                        LogOther("isPC");
+                        //LogOther("isPC");
                         if (pt)
                         {
                             if (tc != null) { c_user.ModExp(Main.ID_ControlMana, 1); }

@@ -16,21 +16,54 @@ namespace s649ASU
          //----nakami-------------------
             private static readonly string modNS = "APP";
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(AttackProcess), "ModExpAtk")]
-            internal static void MEAPostPatch(AttackProcess __instance, int ele, int mod)
+            [HarmonyPatch(typeof(AttackProcess), "Perform")]
+            internal static void MEAPostPatch(AttackProcess __instance, int count, bool hasHit, float dmgMulti, bool maxRoll, bool subAttack)
             {
                 //nakami
                 ClearLogStack();
-                string title = "AP.MEA";
+                string title = "AP.P";
                 LogStack("[" + modNS + "/" + title + "]");
+                List<string> checkThings = new();
+                string checktext = "";
 
-                PatchCore(__instance, ele, mod, true);
+                Chara CC;
+                Card TC;
+                //PatchCore(__instance, ele, mod, true);
+                try 
+                {
+                    checkThings.Add("AP:" + StrConv(__instance));
+                    checkThings.Add("WP:" + StrConv(__instance.weaponSkill));
+                    checkThings.Add("WPID:" + StrConv(__instance.weaponSkill.id));
+                    checkThings.Add("CC:" + StrConv(CC = __instance.CC));
+                    checkThings.Add("TC:" + StrConv(TC = __instance.TC));
+                    //checkThings.Add("Count:" + StrConv(count));
+                    //checkThings.Add("hasH:" + StrConv(hasHit));
+                    //checkThings.Add("dmgM:" + StrConv(dmgMulti));
+                    //checkThings.Add("mR:" + StrConv(maxRoll));
+                    //checkThings.Add("sA:" + StrConv(subAttack));
+                }
+                catch (NullReferenceException ex)
+                {
+                    LogError("ArgCheckFailed for NullPo");
+                    checktext = string.Join("/", checkThings);
+                    LogError(checktext);
+                    Debug.Log(ex.Message);
+                    Debug.Log(ex.StackTrace);
+                    return;
+                }
+                checktext = string.Join("/", checkThings);
+                LogDeep(checktext);
 
-
-                
-
+                if (CC.IsPC && CC.ride != null)
+                {
+                    if (EClass.rnd(4) == 0) { CC.ModExp(Main.ID_Riding, 1); LogInfoTry(true, "RidingASU"); }
+                }
+                if (TC.isChara && TC.IsPC && ((Chara)TC).parasite != null) 
+                {
+                    if (EClass.rnd(4) == 0) { CC.ModExp(Main.ID_Parasite, 1); LogInfoTry(true, "ParasiteASU"); }
+                }
             }
-
+            /*
             [HarmonyPostfix]
             [HarmonyPatch(typeof(AttackProcess), "ModExpDef")]
             internal static void MEDPostPatch(AttackProcess __instance, int ele, int mod)
@@ -42,7 +75,7 @@ namespace s649ASU
 
                 PatchCore(__instance, ele, mod, false);
             }
-
+            */
             private static void PatchCore(AttackProcess attackProcess, int ele, int mod, bool isAtk)
             {
                 List<string> checkThings = new();
